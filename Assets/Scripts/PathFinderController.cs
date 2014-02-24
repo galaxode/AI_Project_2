@@ -8,25 +8,31 @@ public class PathFinderController : MonoBehaviour
 	public string nodeTag; //allows us to change the tag used for nodes from inspector
 
 	private List<Node> nodes; //will be used to insert all the nodes in a list
-	private Node startNode; 
-	private Node endNode;
+	private Node startNode;// = GetComponent<Node>();
+	private Node endNode;// = GetComponent<Node>();
+
+
+//	void Start()
+//	{
+//		startNode = GetComponent<Node>();
+//	}
 
 
 	/**
 	 * This method will be the main one that will be referenced by the NPC controller class to get the best path
 	 * It will start setting up the nodes, including the start and end Node
 	 */
-	public List<Node> GetBestPath(Vector3 theStartNode, Vector3 theEndNode)
+	public List<Vector3> GetBestPath(Vector3 theStartNode, Vector3 theEndNode)
 	{
 		startNode = new Node(theStartNode, Node.State.START);
 		endNode = new Node(theEndNode, Node.State.GOAL);
 
 		//Check is we can reach the goal in a straight path
-		if(NodeReachable)
+		if(NodeReachable())
 		{
 			List<Vector3> bestPath = new List<Vector3>();
-			bestPath.Add(startNode);
-			bestPath.Add(endNode);
+			bestPath.Add(startNode.GetPos());
+			bestPath.Add(endNode.GetPos());
 
 			return bestPath;
 		}
@@ -45,11 +51,11 @@ public class PathFinderController : MonoBehaviour
 				nodes.Add(aNode);
 			}
 
-			nodes.ConnectNodes();
+			ConnectNodes(nodes);
 			
 			List<Node> nodesWithPossibleParents = GetNodesWithPossibleParents();
-			FindBestParentNode(nodesWithPossibleParents);
-
+			FindParentNode(nodesWithPossibleParents);
+		}
 
 	}
 
@@ -61,14 +67,17 @@ public class PathFinderController : MonoBehaviour
 	 * @param start the start location 
 	 * @param goal the target or goal location
 	 */
-	private bool NodeReachable(startNode, endNode)
+	private bool NodeReachable()
 	{
-		float goalDistance = Vector3.Distance(startNode, endNode);
+		Vector3 start = startNode.GetPos();
+		Vector3 end = endNode.GetPos();
+
+		float goalDistance = Vector3.Distance(start, end);
 
 		if (goalDistance > .7f)
 			goalDistance -= .7f;
 
-		if (!Physics.Raycast(startNode, startNode - endNode, goalDistance)
+		if (!Physics.Raycast(start, end - start, goalDistance))
 		    return true;
 		else
 		    return false;
@@ -81,15 +90,15 @@ public class PathFinderController : MonoBehaviour
 	 */
 	private void ConnectStart(Node aNode)
 	{
-		float distanceToStart = Vector3.Distance(startNode.GetPos() - aNode.GetPos());
+		float distanceToStart = Vector3.Distance(startNode.GetPos(), aNode.GetPos());
 		
-		if(!Physics.Raycast(startNode.GetPos(), aNode.GetPos(), distanceToStart)
+		if(!Physics.Raycast(startNode.GetPos(), aNode.GetPos(), distanceToStart))
 		{
 			aNode.SetParentNode(startNode);
 			aNode.SetState(Node.State.OPEN);
 			
-            float distanceToGoal = Vector3.Distance(aNode.GetPos(), endNode.GetPos()) 
-			aNode.SetScore(distanceToStar + distanceToGoal);
+			float distanceToGoal = Vector3.Distance(aNode.GetPos(), endNode.GetPos()); 
+			aNode.SetScore(distanceToStart + distanceToGoal);
 
 		}
 	}
@@ -99,7 +108,7 @@ public class PathFinderController : MonoBehaviour
 	 * THIS METHOD COULD POTENTIALLY DO THE SAME WORK AS THE findOpenNodeConnections METHOD. This could have an "if" check to see if the nodes are already in open state
 	 * @param allNodes the list of nodes found (this list is set up in the getBestPath method)
 	 */
-	private void connectNodes (List<Node> allNodes)  //this method also connects to endpoints. we could try doing that in a separate method but it will												
+	private void ConnectNodes (List<Node> allNodes)  //this method also connects to endpoints. we could try doing that in a separate method but it will												
 	{																//require another 'for each' loop to do it
 					
 		foreach (Node node1 in allNodes)
@@ -111,16 +120,16 @@ public class PathFinderController : MonoBehaviour
 				 if (!Physics.Raycast(node1.GetPos(), node2.GetPos() - node1.GetPos(), distance))
 				 {
 					 //Debug.DrawRay(node1.GetPos(), node2.GetPos() - node1.GetPos(), Color.white, 1);
-					  point.AddConnectedPoint(node2);
+					  node1.AddConnectedNode(node2);
 				 } 
 			 }
 						
-			float distance2 = Vector3.Distance(targetPos, point.GetPos());			//this part connects them to endpoint (it's still inside that outer For Each loop
+			float distance2 = Vector3.Distance(endNode.GetPos(), node1.GetPos());			//this part connects them to endpoint (it's still inside that outer For Each loop
 						
-			if (!Physics.Raycast(targetPos, point.GetPos() - targetPos, distance2))
+			if (!Physics.Raycast(endNode.GetPos(), node1.GetPos() - endNode.GetPos(), distance2))
 			{
 					//Debug.DrawRay(targetPos, point.GetPos() - targetPos, Color.white, 1);
-					node1.AddConnectedPoint(endNode);
+					node1.AddConnectedNode(endNode);
 			}
 		}
 	}
@@ -144,16 +153,16 @@ public class PathFinderController : MonoBehaviour
 						
 						foreach(Node aNode in nodes)
 						{
-							if(aNode.GetState == Node.State.OPEN)
+							if(aNode.GetState() == Node.State.OPEN)
 							{
 								allNodesParented = false;
 								List<Node> connectedNodes = aNode.GetConnectedNodes();
 								
 								foreach(Node connectedNode in connectedNodes)
 								{
-									if(connectedNode.GetState == Node.State.ACTIVE)
+									if(connectedNode.GetState() == Node.State.ACTIVE)
 									{
-										float distanceToStart = Vector3.Distance(connected.GetPos(), startNode.GetPos());
+										float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
 										float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
 										connectedNode.SetScore(distanceToStart + distanceToGoal);
@@ -163,17 +172,19 @@ public class PathFinderController : MonoBehaviour
 										
 										connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
 										
-										{
-											else if(connectedNode.GetState == Node.State.GOAL)
-											{
-												endNode.AddConnectedNode(aNode);
-											}
-										}
 									}
-									aNode.ChangeNodeState(Node.State.CLOSED);							//Close the previous node
+									else if(connectedNode.GetState() == Node.State.GOAL)
+									{
+										endNode.AddConnectedNode(aNode);
+									}
+
+									aNode.SetState(Node.State.CLOSED);							//Close the previous node
 								}
-							}	
+							}
 						}
+				}
+			}
+
 
 	/**
 	 * This method takes a list of open nodes and sets their best parent
@@ -203,7 +214,7 @@ public class PathFinderController : MonoBehaviour
 	 */
 	private bool GoalFound (Node aNode)
 	{
-		if (Node.getState(aNode == State.TARGET))
+		if (aNode.GetState() == Node.State.GOAL)
 			return true;
 		else
 			return false;

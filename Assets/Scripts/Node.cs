@@ -16,7 +16,7 @@ public class Node : MonoBehaviour
 	//These variables could be coded as properties. That could potentially reduce the need for additional methods
 	//See http://msdn.microsoft.com/en-us/library/x9fsa0sw.aspx
 	private Vector3 pos;
-	private float score;
+	private float score = 0;
 	private Node parentNode;
 	private State state;
 
@@ -55,9 +55,9 @@ public class Node : MonoBehaviour
 	 * This method changes a node's state
 	 * @param aNode the node whose state you want to change
 	 */
-	public void ChangeNodeState(State aState)
+	public void SetState(State aState)
 	{
-		State = aState;
+		state = aState;
 	}
 
 	/**
