@@ -10,7 +10,7 @@ public class SearchingState : MonoBehaviour {
 	public bool optimizePathfinding;		//Switches optimization to be consitent accross cpu speeds
 	public int pathRescanRate;				//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
 
-	public float speedMutiplier;			//Allows us to change the value at which speed is multiplied in the inspector
+	public float speedMultiplier;			//Allows us to change the value at which speed is multiplied in the inspector
 
 	private List<Vector3> path; 
 	private Vector3 goalPos;				//The goal position as determined by other game classes
@@ -27,7 +27,7 @@ public class SearchingState : MonoBehaviour {
 	 */
 	void Awake () 
 	{
-		GameObject myObject;
+		GameObject myObject = GameObject.FindGameObjectWithTag("PathFinder");  //I created an empty object with tag PathFinder for now
 		aPathFinder = myObject.GetComponent<PathFinderController>();
 	}
 
@@ -37,16 +37,16 @@ public class SearchingState : MonoBehaviour {
 
 	private void moveToGoal(Vector3 theGoalPos)
 	{
-		bool goalFound = false;
+		bool goalFound = false;    ////////This is never used
 
 		goalPos = theGoalPos;
 		GetNewPath();
 
 //		if(path != null)					// This may not be needed as its not being called as an update method. It will only be called after setting a point 
 //		{
-			while(!GoalReached)
+			while(!GoalReached())  ////////IS this supposed to  be GoalReached() method call or goalFound local bool variable?
 			{
-				if(NextNodeReached)
+				if(NextNodeReached())
 				{
 					nextNodeIndex++;
 					nextNodePos = path[nextNodeIndex];
@@ -55,7 +55,7 @@ public class SearchingState : MonoBehaviour {
 				{
 				
 					Vector3 currPos = transform.position;
-					float speed = speedMutiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
+					float speed = speedMultiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
 				
 					Vector3 motion = nextNodePos - currPos;			//Okay! Now set the new position for your motion
 					motion.Normalize();							//this makes the vector3 motion have a magnitude (length) of 1
@@ -89,7 +89,7 @@ public class SearchingState : MonoBehaviour {
 	private void GetNewPath()
 	{
 		//some code here....
-		path = PathFinderController.GetBestPath(goalPos);
+		path = aPathfinder.GetBestPath(goalPos);  //compiler might not know that Awake() will always run before this thus the error. not sure though
 		nextNodeIndex = 0;
 	}
 
