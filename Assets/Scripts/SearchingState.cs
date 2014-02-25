@@ -35,7 +35,7 @@ public class SearchingState : MonoBehaviour {
 	 *So this will be the method called by the State controller to have the NPC go to the target. It can be run in StateController and then that can call goalFound to make sure 
 	 */
 
-	private void moveToGoal(Vector3 theGoalPos)
+	private void MoveToGoal(Vector3 theGoalPos)
 	{
 		bool goalFound = false;    ////////This is never used
 
