@@ -55,6 +55,10 @@ public class PathFinderController : MonoBehaviour
 			
 			List<Node> nodesWithPossibleParents = GetNodesWithPossibleParents();
 			FindParentNode(nodesWithPossibleParents);
+
+			List<Vector3> thePath = SelectBestPath(nodesWithPossibleParents);
+
+			return thePath;
 		}
 
 	}
@@ -142,48 +146,49 @@ public class PathFinderController : MonoBehaviour
 	 * @param allNodes a list of OPEN nodes to check their individual connection. EACH NODE IN THIS LIST WILL HAVE A LIST OF POTENTIAL PARENTS (possible parents)
 	 * @return a list of new open nodes (those that connect to the nodes passed as argument 
 	 */
-				private List<Node> GetNodesWithPossibleParents()
-				{  
-					bool allNodesParented = false;
-					
-					while(!allNodesParented)
-					{
-						allNodesParented = true;
-						List<Node> parentedNodes = new List<Node>(); 
+	 private List<Node> GetNodesWithPossibleParents()
+	 {  
+		bool allNodesParented = false;
+			
+		List<Node> parentedNodes = new List<Node>(); 
+			while(!allNodesParented)
+			{
+				allNodesParented = true;
 						
-						foreach(Node aNode in nodes)
-						{
-							if(aNode.GetState() == Node.State.OPEN)
-							{
-								allNodesParented = false;
-								List<Node> connectedNodes = aNode.GetConnectedNodes();
+				foreach(Node aNode in nodes)
+				{
+					if(aNode.GetState() == Node.State.OPEN)
+					{
+						allNodesParented = false;
+						List<Node> connectedNodes = aNode.GetConnectedNodes();
 								
-								foreach(Node connectedNode in connectedNodes)
-								{
-									if(connectedNode.GetState() == Node.State.ACTIVE)
-									{
-										float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
-										float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
+						foreach(Node connectedNode in connectedNodes)
+						{
+							if(connectedNode.GetState() == Node.State.ACTIVE)
+							{
+								float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
+								float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
-										connectedNode.SetScore(distanceToStart + distanceToGoal);
-										connectedNode.AddPossibleParent(aNode);
+								connectedNode.SetScore(distanceToStart + distanceToGoal);
+								connectedNode.AddPossibleParent(aNode);
 										
-										parentedNodes.Add(connectedNode);
+								parentedNodes.Add(connectedNode);
 										
-										connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
+								connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
 										
-									}
-									else if(connectedNode.GetState() == Node.State.GOAL)
-									{
-										endNode.AddConnectedNode(aNode);
-									}
-
-									aNode.SetState(Node.State.CLOSED);							//Close the previous node
-								}
 							}
+							else if(connectedNode.GetState() == Node.State.GOAL)
+							{
+								endNode.AddConnectedNode(aNode);
+							}
+
+							aNode.SetState(Node.State.CLOSED);							//Close the previous node
 						}
+					}
 				}
 			}
+		return parentedNodes;
+		}
 
 
 	/**
@@ -191,9 +196,31 @@ public class PathFinderController : MonoBehaviour
 	 * @param openNodes a list of open nodes
 	 * FOR THIS METHOD TO WORK EACH NODE IN THE ARGUMENTLIST WILL HAVE TO HAVE possibleParents NOT NULL
 	 */ 
-	private void FindParentNode(List<Node> openNodes) 
+	private void FindParentNode(List<Node> nodesWithPossibleParents) 
 	{
+		foreach (Node node in nodesWithPossibleParents)
+		{
+			List<Node> possibleParents = node.GetPossibleParents();
 
+			foreach (Node parent in possibleParents)
+			{
+				float lowestScore = 0;
+				Node bestParent = null;
+				bool first = true;
+
+				if (first)
+				{
+					lowestScore = parent.GetScore();
+					bestParent = parent;
+					first = false;
+				} else if (lowestScore > parent.GetScore())
+				{
+					lowestScore = parent.GetScore();
+					bestParent = parent;
+				}
+				node.SetParentNode(bestParent);
+			}
+		}
 	}
 
 	/**
@@ -204,7 +231,53 @@ public class PathFinderController : MonoBehaviour
 	 */
 	private List<Vector3> SelectBestPath(List<Node> parentedNodes)
 	{
+		//trace back finding shortest route (lowest score)
+		List<Node> bestPath = null;
+		float lowestScore = 0;
+		bool first = true;
 		
+		foreach (Node node in endNode.GetConnectedNodes())
+		{
+			float score = 0;
+			bool tracing = true;
+			Node currNode = node;
+			List<Node> nodePath = new List<Node>();
+
+			nodePath.Add(endNode);
+
+			while(tracing)
+			{
+				nodePath.Add(currNode);
+				if (currNode.GetState() == Node.State.START)
+				{
+					if (first)
+					{
+						bestPath = nodePath;
+						lowestScore = score;
+						first = false;
+					} else
+					{
+						if (lowestScore > score)
+						{
+							bestPath = nodePath;
+							lowestScore = score;
+						}
+					}
+					tracing = false;
+					break;
+				}
+				score += currNode.GetScore();
+				currNode = currNode.GetParentNode();
+			}
+		}
+		
+		bestPath.Reverse();
+		List<Vector3> VectorPath = new List<Vector3>();
+		foreach (Node node in bestPath)
+		{
+			VectorPath.Add(node.GetPos());
+		}
+		return VectorPath;
 	}
 
 	/**

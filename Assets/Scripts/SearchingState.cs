@@ -5,10 +5,11 @@ using System.Collections.Generic;
 public class SearchingState : MonoBehaviour {
 
 
-	public bool findPathDynamically;		//Allows us to select if we want the NPC to find path dynamically in the inspector
+	public bool findPathDinamically;		//Allows us to select if we want the NPC to find path dynamically in the inspector
 	public bool debugMode;						
 	public bool optimizePathfinding;		//Switches optimization to be consitent accross cpu speeds
-	public int pathRescanRate;				//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
+	public int pathRescanRate = 0;				//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
+	private float reScanTime;
 
 	public float speedMultiplier;			//Allows us to change the value at which speed is multiplied in the inspector
 
@@ -19,6 +20,8 @@ public class SearchingState : MonoBehaviour {
 
 	private bool onNode; 
 
+	float elapsedTime;
+
 	private PathFinderController aPathFinder;
 
 	
@@ -27,6 +30,11 @@ public class SearchingState : MonoBehaviour {
 	 */
 	void Awake () 
 	{
+		path = new List<Vector3>();
+
+		elapsedTime = 0;
+		reScanTime = 0;
+
 		GameObject myObject = GameObject.FindGameObjectWithTag("PathFinder");  //I created an empty object with tag PathFinder for now
 		aPathFinder = myObject.GetComponent<PathFinderController>();
 	}
@@ -35,10 +43,8 @@ public class SearchingState : MonoBehaviour {
 	 *So this will be the method called by the State controller to have the NPC go to the target. It can be run in StateController and then that can call goalFound to make sure 
 	 */
 
-	private void moveToGoal(Vector3 theGoalPos)
+	public void MoveToGoal(Vector3 theGoalPos)
 	{
-		bool goalFound = false;    ////////This is never used
-
 		goalPos = theGoalPos;
 		GetNewPath();
 
@@ -46,7 +52,18 @@ public class SearchingState : MonoBehaviour {
 //		{
 			while(!GoalReached())  ////////IS this supposed to  be GoalReached() method call or goalFound local bool variable?
 			{
-				if(NextNodeReached())
+			    elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause??
+
+			//Keep rechecking path every pathRescanRate time 
+			if(findPathDinamically)
+			{
+				if(elapsedTime > reScanTime)
+				{
+					reScanTime = elapsedTime + pathRescanRate;
+					GetNewPath();
+				}
+			}
+			    if(NextNodeReached())
 				{
 					nextNodeIndex++;
 					nextNodePos = path[nextNodeIndex];
@@ -88,8 +105,7 @@ public class SearchingState : MonoBehaviour {
 	 */
 	private void GetNewPath()
 	{
-		//some code here....
-		path = aPathfinder.GetBestPath(goalPos);  //compiler might not know that Awake() will always run before this thus the error. not sure though
+		path = aPathFinder.GetBestPath(goalPos, transform.position);  //compiler might not know that Awake() will always run before this thus the error. not sure though
 		nextNodeIndex = 0;
 	}
 
@@ -133,7 +149,7 @@ public class SearchingState : MonoBehaviour {
 	 */
 	public void SetPathfindingToDynamic(bool option)
 	{
-        findPathDynamically = option;
+        findPathDinamically = option;
 	}
 
 	/**
