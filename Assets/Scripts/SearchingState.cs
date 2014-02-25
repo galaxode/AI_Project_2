@@ -30,6 +30,8 @@ public class SearchingState : MonoBehaviour {
 	 */
 	void Awake () 
 	{
+		path = new List<Vector3>();
+
 		elapsedTime = 0;
 		reScanTime = 0;
 
@@ -41,10 +43,8 @@ public class SearchingState : MonoBehaviour {
 	 *So this will be the method called by the State controller to have the NPC go to the target. It can be run in StateController and then that can call goalFound to make sure 
 	 */
 
-	private void MoveToGoal(Vector3 theGoalPos)
+	public void MoveToGoal(Vector3 theGoalPos)
 	{
-		bool goalFound = false;    ////////This is never used
-
 		goalPos = theGoalPos;
 		GetNewPath();
 
@@ -105,8 +105,7 @@ public class SearchingState : MonoBehaviour {
 	 */
 	private void GetNewPath()
 	{
-		//some code here....
-		path = aPathfinder.GetBestPath(goalPos);  //compiler might not know that Awake() will always run before this thus the error. not sure though
+		path = aPathFinder.GetBestPath(goalPos, transform.position);  //compiler might not know that Awake() will always run before this thus the error. not sure though
 		nextNodeIndex = 0;
 	}
 
