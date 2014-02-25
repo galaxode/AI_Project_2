@@ -142,48 +142,48 @@ public class PathFinderController : MonoBehaviour
 	 * @param allNodes a list of OPEN nodes to check their individual connection. EACH NODE IN THIS LIST WILL HAVE A LIST OF POTENTIAL PARENTS (possible parents)
 	 * @return a list of new open nodes (those that connect to the nodes passed as argument 
 	 */
-				private List<Node> GetNodesWithPossibleParents()
-				{  
-					bool allNodesParented = false;
+	 private List<Node> GetNodesWithPossibleParents()
+	 {  
+		bool allNodesParented = false;
 					
-					while(!allNodesParented)
-					{
-						allNodesParented = true;
-						List<Node> parentedNodes = new List<Node>(); 
+			while(!allNodesParented)
+			{
+				allNodesParented = true;
+				List<Node> parentedNodes = new List<Node>(); 
 						
-						foreach(Node aNode in nodes)
-						{
-							if(aNode.GetState() == Node.State.OPEN)
-							{
-								allNodesParented = false;
-								List<Node> connectedNodes = aNode.GetConnectedNodes();
+				foreach(Node aNode in nodes)
+				{
+					if(aNode.GetState() == Node.State.OPEN)
+					{
+						allNodesParented = false;
+						List<Node> connectedNodes = aNode.GetConnectedNodes();
 								
-								foreach(Node connectedNode in connectedNodes)
-								{
-									if(connectedNode.GetState() == Node.State.ACTIVE)
-									{
-										float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
-										float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
+						foreach(Node connectedNode in connectedNodes)
+						{
+							if(connectedNode.GetState() == Node.State.ACTIVE)
+							{
+								float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
+								float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
-										connectedNode.SetScore(distanceToStart + distanceToGoal);
-										connectedNode.AddPossibleParent(aNode);
+								connectedNode.SetScore(distanceToStart + distanceToGoal);
+								connectedNode.AddPossibleParent(aNode);
 										
-										parentedNodes.Add(connectedNode);
+								parentedNodes.Add(connectedNode);
 										
-										connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
+								connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
 										
-									}
-									else if(connectedNode.GetState() == Node.State.GOAL)
-									{
-										endNode.AddConnectedNode(aNode);
-									}
-
-									aNode.SetState(Node.State.CLOSED);							//Close the previous node
-								}
 							}
+							else if(connectedNode.GetState() == Node.State.GOAL)
+							{
+								endNode.AddConnectedNode(aNode);
+							}
+
+							aNode.SetState(Node.State.CLOSED);							//Close the previous node
 						}
+					}
 				}
 			}
+		}
 
 
 	/**
