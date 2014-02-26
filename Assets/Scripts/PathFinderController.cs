@@ -11,6 +11,8 @@ public class PathFinderController : MonoBehaviour
 	private Node startNode;// = GetComponent<Node>();
 	private Node endNode;// = GetComponent<Node>();
 
+	public GameObject emptyObject;
+
 
 //	void Start()
 //	{
@@ -24,8 +26,15 @@ public class PathFinderController : MonoBehaviour
 	 */
 	public List<Vector3> GetBestPath(Vector3 theStartNode, Vector3 theEndNode)
 	{
-		startNode = new Node(theStartNode, Node.State.START);
-		endNode = new Node(theEndNode, Node.State.GOAL);
+		startNode = emptyObject.GetComponent<Node>();
+		startNode.SetPos(theStartNode);
+		startNode.SetState(Node.State.START);
+
+		endNode = emptyObject.GetComponent<Node>();
+		endNode.SetPos(theEndNode);
+		endNode.SetState(Node.State.GOAL);
+
+		//Debug.Log("The state is " + startNode.GetState());
 
 		//Check is we can reach the goal in a straight path
 		if(NodeReachable())
@@ -33,6 +42,8 @@ public class PathFinderController : MonoBehaviour
 			List<Vector3> bestPath = new List<Vector3>();
 			bestPath.Add(startNode.GetPos());
 			bestPath.Add(endNode.GetPos());
+
+			Debug.Log("I guess we are reachable!!");
 
 			return bestPath;
 		}
@@ -45,7 +56,8 @@ public class PathFinderController : MonoBehaviour
 			foreach (GameObject node in gameObjectNodes)
 			{
 				//Node aNode = GetComponent<Node>;
-				Node aNode = new Node(node.transform.position);
+				Node aNode = emptyObject.GetComponent<Node>();
+				aNode = new Node(node.transform.position);
 				ConnectStart(aNode);
 				//ConnectEnd(aNode);
 				nodes.Add(aNode);

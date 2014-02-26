@@ -11,7 +11,7 @@ public class SearchingState : MonoBehaviour {
 	public int pathRescanRate = 0;				//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
 	private float reScanTime;
 
-	public float speedMultiplier;			//Allows us to change the value at which speed is multiplied in the inspector
+	public float speedMultiplier = 2;			//Allows us to change the value at which speed is multiplied in the inspector
 
 	private List<Vector3> path; 
 	private Vector3 goalPos;				//The goal position as determined by other game classes
@@ -19,10 +19,12 @@ public class SearchingState : MonoBehaviour {
 	private int nextNodeIndex;
 
 	private bool onNode; 
+	public bool goalFound;
 
 	float elapsedTime;
 
 	private PathFinderController aPathFinder;
+	
 
 	
 	/**
@@ -31,6 +33,11 @@ public class SearchingState : MonoBehaviour {
 	void Awake () 
 	{
 		path = new List<Vector3>();
+
+		goalPos = new Vector3(0,0,0);
+
+		goalFound = false;
+		onNode = true;
 
 		elapsedTime = 0;
 		reScanTime = 0;
@@ -43,70 +50,81 @@ public class SearchingState : MonoBehaviour {
 	 *So this will be the method called by the State controller to have the NPC go to the target. It can be run in StateController and then that can call goalFound to make sure 
 	 */
 
-	public void MoveToGoal(Vector3 theGoalPos)
+	public void MoveToGoal()
 	{
-		goalPos = theGoalPos;
-		GetNewPath();
+		elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause?
 
-//		if(path != null)					// This may not be needed as its not being called as an update method. It will only be called after setting a point 
-//		{
-			while(!GoalReached())  ////////IS this supposed to  be GoalReached() method call or goalFound local bool variable?
-			{
-			    elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause??
+		Debug.Log("Our goal is to get to : " + goalPos.x + " " + goalPos.y + " " + goalPos.z);
 
-			//Keep rechecking path every pathRescanRate time 
-			if(findPathDinamically)
+		Debug.Log("should be same as: " + path[path.Count - 1].x + " " + path[path.Count - 1].y + " " + path[path.Count -1].z);
+
+
+		//Keep rechecking path every pathRescanRate time 
+		if(findPathDinamically)
+		{
+			if(elapsedTime > reScanTime)
 			{
-				if(elapsedTime > reScanTime)
-				{
-					reScanTime = elapsedTime + pathRescanRate;
-					GetNewPath();
-				}
+				reScanTime = elapsedTime + pathRescanRate;
+				//GetNewPath();
 			}
-			    if(NextNodeReached())
-				{
-					nextNodeIndex++;
-					nextNodePos = path[nextNodeIndex];
-				}
-				else
-				{
-				
-					Vector3 currPos = transform.position;
-					float speed = speedMultiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
-				
-					Vector3 motion = nextNodePos - currPos;			//Okay! Now set the new position for your motion
-					motion.Normalize();							//this makes the vector3 motion have a magnitude (length) of 1
-				
-					Vector3 newPos = currPos * speed;					//create the new position
-					transform.position = newPos;				//now move to the new position! ?
-				}
-			}
-//		}
-	}
+		}
+
+		if(path != null)
+		{
+			Debug.Log("path is not null");
+
+			//Debug.Log(NextNodeReached());
+			if(onNode)
+			{
+				onNode = false;
 	
-//	// Update is called once per frame
-//	void Update () 
-//	{
-//		//Add code for optimization here if needed
-//
-//		//Some code here...
-//		if(findPathDynamically == true)			
-//		{
-//			//Some code here that would make sure that we wait pathRescanRate amount of seconds until we find new path
-//			getNewPath();
-//		}
-//
-//		//Most other code for determining movement should be added here
-//
-//	}
+				Debug.Log("the current Path count is: " + path.Count);
+
+				if(nextNodeIndex < path.Count)
+				{	
+					nextNodePos = path[nextNodeIndex];
+				}	
+
+				Debug.Log ("the current node index is : " + nextNodeIndex);
+				Debug.Log ("The next Node x is " + nextNodePos.x);
+			}
+			else
+			{
+				
+				Vector3 currPos = transform.position;
+
+				Debug.Log("Our current pos is : " + currPos.x + " " + currPos.y + " " + currPos.z);
+
+				float speed = speedMultiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
+				
+				Vector3 motion = nextNodePos - currPos;			//Okay! Now set the new position for your motion
+				motion.Normalize();							//this makes the vector3 motion have a magnitude (length) of 1
+
+
+				
+				//Vector3 newPos = new Vector3();
+				currPos += motion * speed;					//create the new position
+				transform.position = currPos;				//now move to the new position! ?
+
+				NextNodeReached();
+
+				Debug.Log ("Movement functions have ran");
+			}
+		}
+	}
 
 	/**
 	 * This method gets a new path using the PathFinderController class
 	 */
 	private void GetNewPath()
 	{
-		path = aPathFinder.GetBestPath(goalPos, transform.position);  //compiler might not know that Awake() will always run before this thus the error. not sure though
+		path = aPathFinder.GetBestPath(transform.position, goalPos);  //compiler might not know that Awake() will always run before this thus the error. not sure though
+
+		Debug.Log ("There are " + path.Count + " in sol");
+
 		nextNodeIndex = 0;
+
+
 	}
 
 	/**
@@ -121,9 +139,14 @@ public class SearchingState : MonoBehaviour {
 		float zDistanceToNextNode = Mathf.Abs(currentPos.z - nextNodePos.z);
 
 		if((xDistanceToNexNode < 0.1 && zDistanceToNextNode < 0.1) && goalPos == nextNodePos)
+		{
+			goalFound = true;
 			return true;
-		else
+		}else
+		{
+			goalFound  = false;
 			return false;
+		}
 	}
 
 	/**
@@ -138,9 +161,15 @@ public class SearchingState : MonoBehaviour {
 		float zDistanceToNextNode = Mathf.Abs(currentPos.z - nextNodePos.z);
 
 		if(xDistanceToNexNode < 0.1 && zDistanceToNextNode < 0.1)
+		{
+			onNode = true;
+			nextNodeIndex++;
 			return true;
-		else
+		} else
+		{
+			onNode = false;
 			return false;
+		}
 	}
 		 
 	/**
@@ -159,5 +188,12 @@ public class SearchingState : MonoBehaviour {
 	public void SetPathfindingSpeed(float theSpeed)
 	{
         speedMultiplier = theSpeed;
+	}
+
+
+	public void setGoalPos(Vector3 pos)
+	{
+		goalPos = pos;
+		GetNewPath();
 	}
 }
