@@ -26,7 +26,7 @@ public class NPC1StateContoller : MonoBehaviour
 		if(Input.GetButtonDown("Fire1")) 		//Input manager sets this as Mouse0 which is the primary mouse button
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			//Debug.DrawRay(ray.origin, ray.direction * 10, Color.yellow);
+			Debug.DrawRay(ray.origin, ray.direction * 10, Color.yellow, 200);
 			Debug.Log("in the first if");
 
 			if(Physics.Raycast(ray, out hit, 100))

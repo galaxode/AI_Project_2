@@ -23,7 +23,6 @@ public class Node : MonoBehaviour
 	private List<Node> connectedNodes;
 	private List<Node> possibleParents;
 
-
 	void Awake()
 	{
 		//state = State.ACTIVE;
