@@ -11,45 +11,178 @@ public class PathFinderController : MonoBehaviour
 	private Node startNode;// = GetComponent<Node>();
 	private Node endNode;// = GetComponent<Node>();
 
+	//public GameObject emptyObject;
 
-//	void Start()
-//	{
-//		startNode = GetComponent<Node>();
-//	}
+	class Node
+	{
+		public enum State { ACTIVE, OPEN, CLOSED, START, GOAL };		//I changed "States" to "State" because I thought it's more intuitive when referencing it
+	
+		//These variables could be coded as properties. That could potentially reduce the need for additional methods
+		//See http://msdn.microsoft.com/en-us/library/x9fsa0sw.aspx
+		private Vector3 pos;
+		private float score = 0;
+		private Node parentNode;
+		private State state = State.ACTIVE;
+	
+		private List<Node> connectedNodes = new List<Node>();
+		private List<Node> possibleParents = new List<Node>();
+		
+		/**
+		 * This is the constructor method for Node class.
+		 */ 
+		public Node(Vector3 aPos, State aState = State.ACTIVE)
+		{
+			pos = aPos;
+			state = aState;
+		}
+	
+		/**
+		 * This method sets the score of a node
+		 * @param aScore
+		 */
+		public void SetScore(float aScore)
+		{
+			score = aScore;
+		}
+		
+		public void SetPos(Vector3 aPos)
+		{
+			pos = aPos;
+		}
+		
+		/**
+		 * This method sets the parentNode for this node
+		 * @param aNode the parent node of this node
+		 */
+		public void SetParentNode(Node aNode)
+		{
+			parentNode = aNode;
+		}
+		
+		/**
+		 * This method changes a node's state
+		 * @param aNode the node whose state you want to change
+		 */
+		public void SetState(State aState)
+		{
+			state = aState;
+		}
+		
+		/**
+	    * This method adds a node to this node's connectedNode list
+	    * @param aNode the node being added
+	    */
+		public void AddConnectedNode(Node aNode)
+		{
+			connectedNodes.Add (aNode);
+		}
+		
+		/**
+	    * This method adds a possible parent node to possibleParentNodes list
+	    * @param aNode the node being added
+	    */
+		public void AddPossibleParent(Node aNode)
+		{
+			possibleParents.Add (aNode);
+		}
+		
+		/**
+	    * This method gets you the position of a certain node
+	    * @return returns the node's state
+	    */
+		public Vector3 GetPos()	
+		{
+			return pos;
+		}
+		
+		/**
+	    * This method gets you the score of a node
+	    * @return returns the score
+	    */
+		public float GetScore()
+		{
+			return score;
+		}
+		
+		/**
+		 * This method gets you the state of a certain node
+	     * @param aNode the node whose state you want to get
+		 * @return returns the node's state
+		 */
+		public State GetState()
+		{
+			return state;
+		}
+		
+		/**
+	    * This method gets you the position of a certain node
+	    * @return returns the node's state
+	    */
+		public Node GetParentNode()
+		{
+			return parentNode;
+		}
+		
+		/**
+		 * This method gets you the list of connected nodes
+		 * @return returns the list connected nodes
+		 */
+		public List<Node> GetConnectedNodes()
+		{
+			return connectedNodes;
+		}
+		
+		/**
+		 * This method gets you the list of possible parent nodes
+		 * @return returns the list possible parent nodes
+		 */
+		public List<Node> GetPossibleParents()
+		{
+			return possibleParents;
+		}
 
-
+	}
 	/**
 	 * This method will be the main one that will be referenced by the NPC controller class to get the best path
 	 * It will start setting up the nodes, including the start and end Node
 	 */
 	public List<Vector3> GetBestPath(Vector3 theStartNode, Vector3 theEndNode)
 	{
-		startNode = new Node(theStartNode, Node.State.START);
-		endNode = new Node(theEndNode, Node.State.GOAL);
+		startNode = new Node(theStartNode);
+		startNode.SetState(Node.State.START);
+
+		endNode = new Node(theEndNode);
+		endNode.SetState(Node.State.GOAL);
+
+		//Debug.Log("The state is " + startNode.GetState());
 
 		//Check is we can reach the goal in a straight path
 		if(NodeReachable())
 		{
 			List<Vector3> bestPath = new List<Vector3>();
-			bestPath.Add(startNode.GetPos());
-			bestPath.Add(endNode.GetPos());
+			bestPath.Add(theStartNode);
+			bestPath.Add(theEndNode);
 
 			return bestPath;
 		}
 		else
 		{
 			GameObject[] gameObjectNodes = GameObject.FindGameObjectsWithTag(nodeTag);
+
+			Debug.Log("&&&&&&&&& Number of GameObjects is = " + gameObjectNodes.Length);
+
 			nodes = new List<Node>();
 
 			//Create the nodes and add properties as needed such as parent if it connects to start. Add to the node array list
 			foreach (GameObject node in gameObjectNodes)
 			{
-				//Node aNode = GetComponent<Node>;
 				Node aNode = new Node(node.transform.position);
 				ConnectStart(aNode);
 				//ConnectEnd(aNode);
 				nodes.Add(aNode);
 			}
+
+			Debug.Log("&&&&&&&&& Number of Nodes is = " + nodes.Count);
 
 			ConnectNodes(nodes);
 			
@@ -76,13 +209,20 @@ public class PathFinderController : MonoBehaviour
 		Vector3 start = startNode.GetPos();
 		Vector3 end = endNode.GetPos();
 
+		Debug.Log("Here this is start" + start);
+		Debug.Log("Here this is end!!!!!!!!!!!!!" + end);
+
 		float goalDistance = Vector3.Distance(start, end);
 
 		if (goalDistance > .7f)
 			goalDistance -= .7f;
 
+		Debug.Log("******Pero estoy aqui*******");
+
 		if (!Physics.Raycast(start, end - start, goalDistance))
+		{
 		    return true;
+		}
 		else
 		    return false;
 	}
@@ -96,7 +236,7 @@ public class PathFinderController : MonoBehaviour
 	{
 		float distanceToStart = Vector3.Distance(startNode.GetPos(), aNode.GetPos());
 		
-		if(!Physics.Raycast(startNode.GetPos(), aNode.GetPos(), distanceToStart))
+		if(!Physics.Raycast(startNode.GetPos(), aNode.GetPos() - startNode.GetPos(), distanceToStart))
 		{
 			aNode.SetParentNode(startNode);
 			aNode.SetState(Node.State.OPEN);
@@ -292,11 +432,5 @@ public class PathFinderController : MonoBehaviour
 		else
 			return false;
 	}
-
-
-
-
-
-
 
 }

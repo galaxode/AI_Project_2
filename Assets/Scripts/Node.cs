@@ -11,18 +11,24 @@ public class Node : MonoBehaviour
 {
 
 
-	public enum State { OPEN, CLOSED, ACTIVE, START, GOAL };		//I changed "States" to "State" because I thought it's more intuitive when referencing it
+	public enum State { ACTIVE, OPEN, CLOSED, START, GOAL };		//I changed "States" to "State" because I thought it's more intuitive when referencing it
 		
 	//These variables could be coded as properties. That could potentially reduce the need for additional methods
 	//See http://msdn.microsoft.com/en-us/library/x9fsa0sw.aspx
 	private Vector3 pos;
 	private float score = 0;
 	private Node parentNode;
-	private State state;
+	private State state = State.ACTIVE;
 
-    private List<Node> connectedNodes = new List<Node>();
-    private List<Node> possibleParents = new List<Node>();
+	private List<Node> connectedNodes;
+	private List<Node> possibleParents;
 
+	void Awake()
+	{
+		//state = State.ACTIVE;
+		connectedNodes = new List<Node>();
+		possibleParents = new List<Node>();
+	}
 
 	/**
 	 * This is the constructor method for Node class.
@@ -40,6 +46,11 @@ public class Node : MonoBehaviour
 	public void SetScore(float aScore)
 	{
 		score = aScore;
+	}
+
+	public void SetPos(Vector3 aPos)
+	{
+		pos = aPos;
 	}
 
 	/**
