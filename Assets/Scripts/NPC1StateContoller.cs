@@ -4,49 +4,49 @@ using System.Collections;
 public class NPC1StateContoller : MonoBehaviour 
 {
 	private SearchingState search;
-	RaycastHit hit;
-	bool inASearch;
+	private RaycastHit hit;
+	private bool inASearch;
 
 
 	void Awake () 
 	{
-		search = GetComponent<SearchingState>();
-		inASearch = false;
+		search = GetComponent<SearchingState>();		//we make search hold a reference of the SearchState script
+		inASearch = false;								//Set the searching state false by default
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
-		if (inASearch)
-		{
-			if (!search.GoalReached())
-				search.MoveToGoal();
-		}
-
 		if(Input.GetButtonDown("Fire1")) 		//Input manager sets this as Mouse0 which is the primary mouse button
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			Debug.DrawRay(ray.origin, ray.direction * 10, Color.yellow, 200);
-			Debug.Log("in the first if");
 
 			if(Physics.Raycast(ray, out hit, 100))
 		    {
-				Debug.Log("in the Second if");
 				if(hit.transform.tag == "floor")
 				{
-					Debug.Log("in the third if");
+					Vector3 newTarget = new Vector3(hit.point.x, transform.position.y, hit.point.z);	//Set tartget to point where ray hits
+					search.SetGoalPos(newTarget);		//Now we only set the goal for our search state
 
-					Vector3 newTarget = new Vector3(hit.point.x, transform.position.y, hit.point.z);
-				//	SearchingState search = GetComponent<SearchingState>();				//Maybe not needed if it works during awake
-
-					Debug.Log(hit.point.x + " and Y " + transform.position.y + "and z  " + hit.point.z);
-				
-					search.setGoalPos(newTarget);
-
-					inASearch = true;
-
+					inASearch = true;					//Now we say we are in active search state
 				}
 			}
 		}
+
+		if (inASearch)						//Keep searching (and moving) until goal is found as determined by Searching method
+		{
+			Searching();
+		}
+	}
+
+	/**
+	 * This method for now just keeps moving to a goal using the search state MoveToGoal method 
+	 */
+	private void Searching()
+	{
+		if (!search.GoalReached())		//We use the method GoalReached rather than the public boolean
+			search.MoveToGoal();		//because otherwise NPC will move to only one goal
+		else
+			inASearch = false;			//Once GoalReached() method returns true we can stop searching 
 	}
 }
