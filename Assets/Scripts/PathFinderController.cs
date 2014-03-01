@@ -7,18 +7,14 @@ public class PathFinderController : MonoBehaviour
 
 	public string nodeTag; //allows us to change the tag used for nodes from inspector
 
-	private List<Node> nodes; //will be used to insert all the nodes in a list
-	private Node startNode;// = GetComponent<Node>();
-	private Node endNode;// = GetComponent<Node>();
-
-	//public GameObject emptyObject;
+	private List<Node> nodes;	//Our main list of nodes we will use
+	private Node startNode;
+	private Node endNode;
 
 	class Node
 	{
-		public enum State { ACTIVE, OPEN, CLOSED, START, GOAL };		//I changed "States" to "State" because I thought it's more intuitive when referencing it
-	
-		//These variables could be coded as properties. That could potentially reduce the need for additional methods
-		//See http://msdn.microsoft.com/en-us/library/x9fsa0sw.aspx
+		public enum State { ACTIVE, OPEN, CLOSED, START, GOAL };		
+
 		private Vector3 pos;
 		private float score = 0;
 		private Node parentNode;
@@ -26,7 +22,7 @@ public class PathFinderController : MonoBehaviour
 	
 		private List<Node> connectedNodes = new List<Node>();
 		private List<Node> possibleParents = new List<Node>();
-		
+
 		/**
 		 * This is the constructor method for Node class.
 		 */ 
@@ -148,13 +144,12 @@ public class PathFinderController : MonoBehaviour
 	 */
 	public List<Vector3> GetBestPath(Vector3 theStartNode, Vector3 theEndNode)
 	{
-		startNode = new Node(theStartNode);
+		//Start by setting the global variables for startNode and endNode so they are accessible by all methods
+		startNode = new Node(theStartNode);		
 		startNode.SetState(Node.State.START);
 
 		endNode = new Node(theEndNode);
 		endNode.SetState(Node.State.GOAL);
-
-		//Debug.Log("The state is " + startNode.GetState());
 
 		//Check is we can reach the goal in a straight path
 		if(NodeReachable())
@@ -167,29 +162,24 @@ public class PathFinderController : MonoBehaviour
 		}
 		else
 		{
+			// Since we cannot trace a straigh line from start to end we detect all nodes and put them in a list
 			GameObject[] gameObjectNodes = GameObject.FindGameObjectsWithTag(nodeTag);
-
-			Debug.Log("&&&&&&&&& Number of GameObjects is = " + gameObjectNodes.Length);
-
 			nodes = new List<Node>();
 
 			//Create the nodes and add properties as needed such as parent if it connects to start. Add to the node array list
 			foreach (GameObject node in gameObjectNodes)
 			{
 				Node aNode = new Node(node.transform.position);
-				ConnectStart(aNode);
-				//ConnectEnd(aNode);
-				nodes.Add(aNode);
+				ConnectStart(aNode);	//Check right away if the node connects to start and set it to oppen if it does
+				nodes.Add(aNode);		//Add nodes to our list of nodes
 			}
 
-			Debug.Log("&&&&&&&&& Number of Nodes is = " + nodes.Count);
-
-			ConnectNodes(nodes);
+			ConnectNodes(nodes);		//Now find connections for all nodes
 			
-			List<Node> nodesWithPossibleParents = GetNodesWithPossibleParents();
-			FindParentNode(nodesWithPossibleParents);
+			List<Node> nodesWithConnections= GetNodesWithPossibleParents(); //Get a new list of nodes with possible parents
+			FindParentNode(nodesWithConnections);			//Set the best paent for each node
 
-			List<Vector3> thePath = SelectBestPath(nodesWithPossibleParents);
+			List<Vector3> thePath = SelectBestPath(nodesWithConnections);		//Use our list of parented nodes to select the best path 
 
 			return thePath;
 		}
@@ -209,15 +199,10 @@ public class PathFinderController : MonoBehaviour
 		Vector3 start = startNode.GetPos();
 		Vector3 end = endNode.GetPos();
 
-		Debug.Log("Here this is start" + start);
-		Debug.Log("Here this is end!!!!!!!!!!!!!" + end);
-
 		float goalDistance = Vector3.Distance(start, end);
 
 		if (goalDistance > .7f)
 			goalDistance -= .7f;
-
-		Debug.Log("******Pero estoy aqui*******");
 
 		if (!Physics.Raycast(start, end - start, goalDistance))
 		{
@@ -263,7 +248,6 @@ public class PathFinderController : MonoBehaviour
 							
 				 if (!Physics.Raycast(node1.GetPos(), node2.GetPos() - node1.GetPos(), distance))
 				 {
-					 //Debug.DrawRay(node1.GetPos(), node2.GetPos() - node1.GetPos(), Color.white, 1);
 					  node1.AddConnectedNode(node2);
 				 } 
 			 }
@@ -272,7 +256,6 @@ public class PathFinderController : MonoBehaviour
 						
 			if (!Physics.Raycast(endNode.GetPos(), node1.GetPos() - endNode.GetPos(), distance2))
 			{
-					//Debug.DrawRay(targetPos, point.GetPos() - targetPos, Color.white, 1);
 					node1.AddConnectedNode(endNode);
 			}
 		}
@@ -327,7 +310,7 @@ public class PathFinderController : MonoBehaviour
 					}
 				}
 			}
-		return parentedNodes;
+		return parentedNodes;							//This list will have ALL nodes with possible parents 
 		}
 
 
@@ -385,32 +368,36 @@ public class PathFinderController : MonoBehaviour
 
 			nodePath.Add(endNode);
 
+			//Keep adding score (line 393 and 394) until we get to the start node
 			while(tracing)
 			{
 				nodePath.Add(currNode);
+
+				//If we get to the start node, then compare total scores for each path and select only lowest total one
 				if (currNode.GetState() == Node.State.START)
 				{
 					if (first)
 					{
-						bestPath = nodePath;
+						bestPath = nodePath;		//Add the current list of node being checked as the list of path with best score
 						lowestScore = score;
 						first = false;
 					} else
 					{
 						if (lowestScore > score)
 						{
-							bestPath = nodePath;
+							bestPath = nodePath;	//Add the current list of node being checked as the list of path with best score
 							lowestScore = score;
 						}
 					}
 					tracing = false;
 					break;
 				}
-				score += currNode.GetScore();
-				currNode = currNode.GetParentNode();
+				score += currNode.GetScore();			//Add the score of the next node 
+				currNode = currNode.GetParentNode();	//Change the value of our curr node to the next node
 			}
 		}
-		
+
+		// Now we reverse the path as right now is from end to start
 		bestPath.Reverse();
 		List<Vector3> VectorPath = new List<Vector3>();
 		foreach (Node node in bestPath)
@@ -419,18 +406,4 @@ public class PathFinderController : MonoBehaviour
 		}
 		return VectorPath;
 	}
-
-	/**
-	 * This method just checks if the node checked is the goal
-	 * @param aNode the node checked
-	 * @return true if the node is the goal, false if its not
-	 */
-	private bool GoalFound (Node aNode)
-	{
-		if (aNode.GetState() == Node.State.GOAL)
-			return true;
-		else
-			return false;
-	}
-
 }

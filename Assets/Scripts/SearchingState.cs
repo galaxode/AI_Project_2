@@ -8,33 +8,29 @@ public class SearchingState : MonoBehaviour {
 	public bool findPathDinamically;		//Allows us to select if we want the NPC to find path dynamically in the inspector
 	public bool debugMode;						
 	public bool optimizePathfinding;		//Switches optimization to be consitent accross cpu speeds
-	public int pathRescanRate = 0;				//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
+	public float pathRescanRate = 0;		//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
 	private float reScanTime;
+	private float elapsedTime;
 
-	public float speedMultiplier = 2;			//Allows us to change the value at which speed is multiplied in the inspector
-
-	private List<Vector3> path; 
+	public float speedMultiplier = 2;		//Allows us to change the value at which speed is multiplied in the inspector
+	
+	private List<Vector3> path; 			// and array of vectors containing the path to take 
 	private Vector3 goalPos;				//The goal position as determined by other game classes
 	private Vector3 nextNodePos;			//The next node in the path that the NPC will follow
-	private int nextNodeIndex;
+	private int nextNodeIndex;				// used to keep count of node index
 
-	private bool onNode; 
-	public bool goalFound;
+	private bool onNode; 					//To determined when a node has been reached
+	public bool goalFound;					// NOT USED but keeping it as it may become useful later on
 
-	float elapsedTime;
+	private PathFinderController aPathFinder;	// This stores a reference to the PathFinderController script
 
-	private PathFinderController aPathFinder;
-	
-
-	
 	/**
-	 * Get the script from whatever compononet we choose to assign the PathFinderController script to and assig it to 
+	 * We start we an awake function to initalize all variables that need initialized
 	 */
 	void Awake () 
 	{
-		path = new List<Vector3>();
-
-		goalPos = new Vector3(0,0,0);
+		path = new List<Vector3>();		
+		goalPos = new Vector3(0,0,0);	//If this is not done goalPos remains null
 
 		goalFound = false;
 		onNode = true;
@@ -42,73 +38,59 @@ public class SearchingState : MonoBehaviour {
 		elapsedTime = 0;
 		reScanTime = 0;
 
-		GameObject myObject = GameObject.FindGameObjectWithTag("PathFinder");  //I created an empty object with tag PathFinder for now
+		GameObject myObject = GameObject.FindGameObjectWithTag("PathFinder");  //Empty object where we store all nodes 
 		aPathFinder = myObject.GetComponent<PathFinderController>();
 	}
 
 	/**
-	 *So this will be the method called by the State controller to have the NPC go to the target. It can be run in StateController and then that can call goalFound to make sure 
+	 *This method gets called by the StateController class of the NPC that will make use of this state 
 	 */
-
 	public void MoveToGoal()
 	{
 		elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause?
 
-		Debug.Log("Our goal is to get to : " + goalPos.x + " " + goalPos.y + " " + goalPos.z);
-
-		Debug.Log("should be same as: " + path[path.Count - 1].x + " " + path[path.Count - 1].y + " " + path[path.Count -1].z);
-
-
-		//Keep rechecking path every pathRescanRate time 
+		//If we choose to find path dinamically this will run every pathRescanRate seconds
 		if(findPathDinamically)
 		{
-			if(elapsedTime > reScanTime)
+			if(elapsedTime > reScanTime)			//Will evaluate to true only every pathRescanRate seconds
 			{
 				reScanTime = elapsedTime + pathRescanRate;
-				//GetNewPath();
+				GetNewPath();
 			}
 		}
 
-		if(path != null)
+		if(path != null)			
 		{
-			Debug.Log("path is not null");
-
-			//Debug.Log(NextNodeReached());
 			if(onNode)
 			{
 				onNode = false;
-	
-				Debug.Log("the current Path count is: " + path.Count);
-
-				if(nextNodeIndex < path.Count)
+			
+				if(nextNodeIndex < path.Count)				//Just to avoid out of bounds 
 				{	
-					nextNodePos = path[nextNodeIndex];
+					nextNodePos = path[nextNodeIndex];		//Change were NPC is walking towards after reaching each node
 				}	
-
-				Debug.Log ("the current node index is : " + nextNodeIndex);
-				Debug.Log ("The next Node x is " + nextNodePos.x);
 			}
 			else
 			{
-				
-				Vector3 currPos = transform.position;
-
-				Debug.Log("Our current pos is : " + currPos.x + " " + currPos.y + " " + currPos.z);
-
+				//This draws a ray in the scene view only - for troubleshooting
+				if(debugMode)
+				{
+					for (int i=0; i<path.Count-1; ++i)
+					{
+						Debug.DrawLine((Vector3)path[i], (Vector3)path[i+1], Color.white, 0.01f);
+					}
+				}
+			
+				//The following lines move the NPC by a number of units determined by the value of speedMutiplier 
+				Vector3 currPos = transform.position;	
 				float speed = speedMultiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
-				
-				Vector3 motion = nextNodePos - currPos;			//Okay! Now set the new position for your motion
-				motion.Normalize();							//this makes the vector3 motion have a magnitude (length) of 1
+				Vector3 motion = nextNodePos - currPos;			//Now set the new position 
+				motion.Normalize();								//this makes the vector3 motion have a magnitude (length) of 1
 
+				currPos += motion * speed;					//create the new position by adding motion * speed units to our current position
+				transform.position = currPos;				//now move to the new position
 
-				
-				//Vector3 newPos = new Vector3();
-				currPos += motion * speed;					//create the new position
-				transform.position = currPos;				//now move to the new position! ?
-
-				NextNodeReached();
-
-				Debug.Log ("Movement functions have ran");
+				NextNodeReached();							//Sets onNode variable - asking: should we keep moving to the same node? 
 			}
 		}
 	}
@@ -118,13 +100,19 @@ public class SearchingState : MonoBehaviour {
 	 */
 	private void GetNewPath()
 	{
-		path = aPathFinder.GetBestPath(transform.position, goalPos);  //compiler might not know that Awake() will always run before this thus the error. not sure though
+		path = aPathFinder.GetBestPath(transform.position, goalPos);  
+		nextNodeIndex = 0;	//Everytime we get a new path we must start from index 0
+		onNode = true;		//If we do not set onNode back to true every time we click on a new point, the NPC would have to finish reaching the next node before following new path
+	}
 
-		Debug.Log ("There are " + path.Count + " in sol");
-
-		nextNodeIndex = 0;
-
-
+	/**
+	 * This method allows us to set the goal position that we will move to from other classes
+	 * Right now gets called every time we click somewhere on the environment 
+	 */
+	public void SetGoalPos(Vector3 pos)
+	{
+		goalPos = pos;
+		GetNewPath();		//We get a new path for every new position entered
 	}
 
 	/**
@@ -188,12 +176,5 @@ public class SearchingState : MonoBehaviour {
 	public void SetPathfindingSpeed(float theSpeed)
 	{
         speedMultiplier = theSpeed;
-	}
-
-
-	public void setGoalPos(Vector3 pos)
-	{
-		goalPos = pos;
-		GetNewPath();
 	}
 }
