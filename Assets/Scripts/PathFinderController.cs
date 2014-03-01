@@ -151,7 +151,7 @@ public class PathFinderController : MonoBehaviour
 		endNode = new Node(theEndNode);
 		endNode.SetState(Node.State.GOAL);
 
-		//Check is we can reach the goal in a straight path
+		//Check if we can reach the goal in a straight path
 		if(NodeReachable())
 		{
 			List<Vector3> bestPath = new List<Vector3>();
@@ -162,7 +162,7 @@ public class PathFinderController : MonoBehaviour
 		}
 		else
 		{
-			// Since we cannot trace a straigh line from start to end we detect all nodes and put them in a list
+			// Since we cannot trace a straight line from start to end we detect all nodes and put them in a list
 			GameObject[] gameObjectNodes = GameObject.FindGameObjectsWithTag(nodeTag);
 			nodes = new List<Node>();
 
@@ -354,42 +354,34 @@ public class PathFinderController : MonoBehaviour
 	 */
 	private List<Vector3> SelectBestPath(List<Node> parentedNodes)
 	{
-		//trace back finding shortest route (lowest score)
+		//travel back through nodes to finding shortest route (lowest score)
 		List<Node> bestPath = null;
-		float lowestScore = 0;
-		bool first = true;
-		
+		float lowestScore = -1;  //lowest score is set to -1 for the first journey back to the start node, at which point it will be set to
+								// the first score. later, it will take on the score value only if it is greater than score
 		foreach (Node node in endNode.GetConnectedNodes())
 		{
 			float score = 0;
-			bool tracing = true;
+			bool backtracking = true;
 			Node currNode = node;
 			List<Node> nodePath = new List<Node>();
 
 			nodePath.Add(endNode);
 
-			//Keep adding score (line 393 and 394) until we get to the start node
-			while(tracing)
+			//Keep adding score (line 387 and 388) until we get to the start node
+			while(backtracking)
 			{
 				nodePath.Add(currNode);
 
 				//If we get to the start node, then compare total scores for each path and select only lowest total one
 				if (currNode.GetState() == Node.State.START)
 				{
-					if (first)
+					if (lowestScore < 0 || lowestScore > score) //check if lowestScore has not been set yet, or if there is a lower score
 					{
 						bestPath = nodePath;		//Add the current list of node being checked as the list of path with best score
 						lowestScore = score;
-						first = false;
-					} else
-					{
-						if (lowestScore > score)
-						{
-							bestPath = nodePath;	//Add the current list of node being checked as the list of path with best score
-							lowestScore = score;
-						}
-					}
-					tracing = false;
+					} 
+					
+					backtracking = false;
 					break;
 				}
 				score += currNode.GetScore();			//Add the score of the next node 
