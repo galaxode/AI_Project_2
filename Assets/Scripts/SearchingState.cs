@@ -68,6 +68,7 @@ public class SearchingState : MonoBehaviour {
 				if(nextNodeIndex < path.Count)				//Just to avoid out of bounds 
 				{	
 					nextNodePos = path[nextNodeIndex];		//Change were NPC is walking towards after reaching each node
+					nextNodePos.y = transform.position.y;
 				}	
 			}
 			else
