@@ -17,7 +17,7 @@ public class NPC1StateContoller : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		if(Input.GetButtonDown("Fire1")) 		//Input manager sets this as Mouse0 which is the primary mouse button
+		if(Input.GetButtonDown("Fire1"))	//Input manager sets this as Mouse0 which is the primary mouse button
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
