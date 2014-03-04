@@ -5,6 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
 	public float turnSmoothing = 15f;
 	public float speedDampTime = 0.1f;
+	public float runningSpeed = 3.0f;
 
 	private Animator anim;
 	private HashIDs hash;
@@ -31,6 +32,11 @@ public class PlayerMovement : MonoBehaviour
 		{
 			Rotating(horizontal, vertical);
 			anim.SetFloat(hash.speedFloat, 5.5f, speedDampTime, Time.deltaTime);
+
+			Vector3 currentPos = transform.position;
+			Vector3 targetDirection = new Vector3(horizontal, 0f, vertical);
+			Vector3 newPos = currentPos + targetDirection * runningSpeed * Time.deltaTime;
+			rigidbody.MovePosition(newPos);
 		}
 		else
 		{
