@@ -6,7 +6,6 @@ public class PlayerMovement : MonoBehaviour
 	public float turnSmoothing = 15f;
 	public float speedDampTime = 0.1f;
 	public float runningSpeed = 3.0f;
-	public float jumpForce = 200.0f;
 
 	private Animator anim;
 	private HashIDs hash;
@@ -16,16 +15,6 @@ public class PlayerMovement : MonoBehaviour
 	{
 		anim = GetComponent<Animator>();
 		hash = GameObject.FindGameObjectWithTag("GameController").GetComponent<HashIDs>();
-		Physics.gravity = new Vector3(0,-1000,0);
-	}
-
-	void Update()
-	{
-		if(Input.GetButtonDown("Jump"))
-		{
-			Debug.Log("IN HERE!!!!!");
-			rigidbody.AddForce(new Vector3(0, 1, 0) * jumpForce);
-		}
 	}
 
 	void FixedUpdate()
