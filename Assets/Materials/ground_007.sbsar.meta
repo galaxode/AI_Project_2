@@ -55,7 +55,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: Hills
       value:
-        scalar[0]: 0
+        scalar[0]: .75
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -83,16 +83,16 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: Rock_2_Color
       value:
-        scalar[0]: .843100011
-        scalar[1]: .815599978
-        scalar[2]: .729399979
+        scalar[0]: .837728202
+        scalar[1]: 1
+        scalar[2]: .816176474
         scalar[3]: 0
         texture: {instanceID: 0}
     - name: Rock_3_Color
       value:
-        scalar[0]: .470499992
-        scalar[1]: .439200014
-        scalar[2]: .400000006
+        scalar[0]: .33007139
+        scalar[1]: .715602875
+        scalar[2]: .816176474
         scalar[3]: 0
         texture: {instanceID: 0}
     - name: Snow
@@ -104,7 +104,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: Depth
       value:
-        scalar[0]: 0
+        scalar[0]: .330000013
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -185,7 +185,7 @@ SubstanceImporter:
         data:
           first:
             name: _Shininess
-          second: .078125
+          second: .157054618
       colors:
         data:
           first:
