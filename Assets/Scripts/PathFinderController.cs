@@ -289,11 +289,10 @@ public class PathFinderController : MonoBehaviour
 						{
 							if(connectedNode.GetState() == Node.State.ACTIVE)
 							{
-								float distanceToStart = Mathf.Abs(aNode.GetScore() + Vector3.Distance(aNode.GetPos(), connectedNode.GetPos()));
+								float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
 								float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
 								connectedNode.SetScore(distanceToStart + distanceToGoal);
-								
 								connectedNode.AddPossibleParent(aNode);
 										
 								parentedNodes.Add(connectedNode);
