@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 36f42af078f4442728e7f98f9346c5b9
 ModelImporter:
-  serializedVersion: 15
+  serializedVersion: 16
   fileIDToRecycleName:
     100000: //RootNode
     100002: Cone
@@ -83,4 +83,5 @@ ModelImporter:
     rootMotionBoneName: 
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2
+  additionalBone: 0
   userData: 
