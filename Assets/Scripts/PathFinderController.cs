@@ -40,6 +40,10 @@ public class PathFinderController : MonoBehaviour
 		{
 			score = aScore;
 		}
+
+		/**
+		 * This method sets the posisiton of the node as a vector
+		 */
 		
 		public void SetPos(Vector3 aPos)
 		{
@@ -166,7 +170,7 @@ public class PathFinderController : MonoBehaviour
 			GameObject[] gameObjectNodes = GameObject.FindGameObjectsWithTag(nodeTag);
 			nodes = new List<Node>();
 
-			//Create the nodes and add properties as needed such as parent if it connects to start. Add to the node array list
+			//Create the nodes and add properties as needed 
 			foreach (GameObject node in gameObjectNodes)
 			{
 				Node aNode = new Node(node.transform.position);
@@ -174,7 +178,7 @@ public class PathFinderController : MonoBehaviour
 				nodes.Add(aNode);		//Add nodes to our list of nodes
 			}
 
-			ConnectNodes(nodes);		//Now find connections for all nodes
+			ConnectNodes(nodes);		//Now find possible connections for all nodes
 			
 			List<Node> nodesWithConnections= GetNodesWithPossibleParents(); //Get a new list of nodes with possible parents
 			FindParentNode(nodesWithConnections);			//Set the best paent for each node
@@ -289,7 +293,8 @@ public class PathFinderController : MonoBehaviour
 						{
 							if(connectedNode.GetState() == Node.State.ACTIVE)
 							{
-								float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
+								//Calculate a s cost in the case that aNode would be the connected node
+								float distanceToStart = aNode.GetScore() + Vector3.Distance(connectedNode.GetPos(), connectedNode.GetPos());
 								float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
 								connectedNode.SetScore(distanceToStart + distanceToGoal);
@@ -297,7 +302,7 @@ public class PathFinderController : MonoBehaviour
 										
 								parentedNodes.Add(connectedNode);
 										
-								connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around (I HOPE)		
+								connectedNode.SetState(Node.State.OPEN);				//Open the connected node so that is checked next time around	
 										
 							}
 							else if(connectedNode.GetState() == Node.State.GOAL)
