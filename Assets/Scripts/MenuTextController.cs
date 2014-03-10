@@ -11,6 +11,7 @@ public class MenuTextController : MonoBehaviour
 	public bool isLevel2 = false;
 	
 	private bool showLevelChoices = false;
+	private bool alreadyClickedLevelChoices = false; //make sure they can't click this again
 	
 	GameObject startMenu;
 	GameObject level1;
@@ -28,12 +29,14 @@ public class MenuTextController : MonoBehaviour
 		
 		if (showLevelChoices)
 		{
-			startMenu.transform.Translate(0f, 0.6f, 0f);	//raise the start menu wall up
+			startMenu.transform.Translate(Vector3.up * 0.7f * Time.deltaTime);	//raise the start menu wall up
 			
-			level1.renderer.enabled = true;					//show level 1 choice
-			level2.renderer.enabled = true;					//show level 2 choice
-			
-			showLevelChoices = false;						//prevent the start menu from moving again
+			if (startMenu.transform.position.y >= 0.8f)
+			{
+				showLevelChoices = false;					//stop menu wall from moving
+				level1.renderer.enabled = true;				//show level 1 choice
+				level2.renderer.enabled = true;				//show level 2 choice
+			}
 		}
 	}
 	
@@ -59,9 +62,11 @@ public class MenuTextController : MonoBehaviour
 		{
 			Application.LoadLevel(1); 	//load first level
 		}
-		else if (isChooseLevel)			
+		else if (isChooseLevel && !alreadyClickedLevelChoices)			
 		{
 			showLevelChoices = true;	//show the level choices in update method
+			alreadyClickedLevelChoices = true;
+			
 		}
 		else if (isLevel1)			
 		{
