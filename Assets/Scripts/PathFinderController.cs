@@ -295,6 +295,7 @@ public class PathFinderController : MonoBehaviour
 							{
 								//Calculate a s cost in the case that aNode would be the connected node
 								float distanceToStart = aNode.GetScore() + Vector3.Distance(connectedNode.GetPos(), connectedNode.GetPos());
+								//float distanceToStart = Vector3.Distance(connectedNode.GetPos(), startNode.GetPos());
 								float distanceToGoal = Vector3.Distance(connectedNode.GetPos(), endNode.GetPos()); 
 										
 								connectedNode.SetScore(distanceToStart + distanceToGoal);

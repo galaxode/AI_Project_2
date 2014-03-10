@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class SearchingState : MonoBehaviour {
 
 
-	public bool findPathDinamically;		//Allows us to select if we want the NPC to find path dynamically in the inspector
+	public bool findPathDynamically;		//Allows us to select if we want the NPC to find path dynamically in the inspector
 	public bool debugMode;						
 	public bool optimizePathfinding;		//Switches optimization to be consitent accross cpu speeds
 	public float pathRescanRate = 0;		//Allows us to change the speed at which the path is re-scanned in the editor. We could implement this to make it nicer: http://docs.unity3d.com/Documentation/Components/editor-CustomEditors.html
@@ -50,7 +50,7 @@ public class SearchingState : MonoBehaviour {
 		elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause?
 
 		//If we choose to find path dinamically this will run every pathRescanRate seconds
-		if(findPathDinamically)
+		if(findPathDynamically)
 		{
 			if(elapsedTime > reScanTime)			//Will evaluate to true only every pathRescanRate seconds
 			{
@@ -167,7 +167,7 @@ public class SearchingState : MonoBehaviour {
 	 */
 	public void SetPathfindingToDynamic(bool option)
 	{
-        findPathDinamically = option;
+        findPathDynamically = option;
 	}
 
 	/**

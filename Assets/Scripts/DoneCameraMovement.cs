@@ -3,7 +3,7 @@ using System.Collections;
 
 public class DoneCameraMovement : MonoBehaviour
 {
-	public float smooth = 1.5f;			// The relative speed at which the camera will catch up.
+	public float smooth = 0.5f;			// The relative speed at which the camera will catch up.
 	public GameObject cameraObject;
 	private Camera map;
 	
@@ -52,16 +52,16 @@ public class DoneCameraMovement : MonoBehaviour
 
 		if(mapSelected)
 		{
-			map.camera.enabled =false;
-		    camera.enabled = true;
+			map.camera.enabled = true;
+		    camera.enabled = false;
 			//mapSelected = false;
 		}
 
 		if (!mapSelected)
 		{
-			map.camera.enabled = true;
+			map.camera.enabled = false;
 			//mapSelected = true;
-			camera.enabled = false;
+			camera.enabled = true;
 
 		}
 
