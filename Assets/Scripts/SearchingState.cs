@@ -113,6 +113,7 @@ public class SearchingState : MonoBehaviour {
 	public void SetGoalPos(Vector3 pos)
 	{
 		goalPos = pos;
+		if(debugMode){Debug.Log("goalPos: " + goalPos);}
 		GetNewPath();		//We get a new path for every new position entered
 	}
 
