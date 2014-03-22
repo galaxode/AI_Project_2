@@ -6,12 +6,17 @@ public class NPC1StateContoller : MonoBehaviour
 	private SearchingState search;
 	private RaycastHit hit;
 	private bool inASearch;
+	private GameObject player;
+	private AttackingState attack;
 
 
 	void Awake () 
 	{
 		search = GetComponent<SearchingState>();		//we make search hold a reference of the SearchState script
 		inASearch = false;								//Set the searching state false by default
+		attack = GetComponent<AttackingState>();
+		player = GameObject.FindGameObjectWithTag("Player");
+
 	}
 	
 	// Update is called once per frame
@@ -36,6 +41,13 @@ public class NPC1StateContoller : MonoBehaviour
 		if (inASearch)						//Keep searching (and moving) until goal is found as determined by Searching method
 		{
 			Searching();
+		}
+
+		//If the player gets too close attack and chase, otherwise just chase
+		if(Vector3.Distance(transform.position, player.transform.position) < 3)
+		{
+			if(!attack.OutOfAmmo())
+				attack.AttackPlayer();
 		}
 	}
 
