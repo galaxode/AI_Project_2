@@ -5,18 +5,25 @@ using System.Collections.Generic;
 public class StateController : MonoBehaviour 
 {
 	public bool debugMode;					//toggle debug mode from inspector
-	public string wordGemTag = "WordGem";	//this allows us to change the tag from the inspector
-	private SearchingState search;			//this is a reference to the SearchingState script
-	private bool inASearch;					//this tells us whether we are in an active search
-	private List<Vector3> gemPositions;		//this will be the list of all gem positions
-	private bool searchNewGem;				//this ensures that we only set a new goal when necessary
-	private int gemCount;
 
+	public string wordGemTag = "WordGem";	//allows us to change the tag from the inspector
+	private SearchingState search;			//reference to the SearchingState script
+	private bool inASearch;					//tells us whether we are in an active search
+	private List<Vector3> gemPositions;		//list of all gem positions
+	private bool searchNewGem;				//ensures that we only set a new goal when necessary
+	private int gemCount;					//keep track of number of gems
+
+
+	private GameObject player;				//reference to player game object
+	private AttackingState attack;			//reference to AttackingState script
+
+	private NPC1Health health;				//reference to NPC1Health script
 
 	void Start()
-	{
+	{	
+		//GEM SEARCHING INSTANTIATION CODE
 		search = GetComponent<SearchingState>();		//we make search hold a reference of the SearchState script
-		inASearch = true;								//Set the searching state TRUE by default
+		inASearch = false;								//Set the searching state false by default
 		gemPositions = new List<Vector3>();				//create new list of Vector3 positions for the gems
 		searchNewGem = true;							//set the searchNewGem to true upon start
 
@@ -31,18 +38,33 @@ public class StateController : MonoBehaviour
 			gemCount++;									//count the gems on the board
 		}
 
+		//ATTACKING INSTANTIATION CODE
+		attack = GetComponent<AttackingState>();
+		player = GameObject.FindGameObjectWithTag("Player");
+
+		//HEALTH INSTANTIATION CODE
+		health = GetComponent<NPC1Health>();
 	}
 
 	void Update() 
 	{
 
+		//If the player gets too close attack and chase, otherwise just chase
+		if(Vector3.Distance(transform.position, player.transform.position) < 3)
+		{
+			if(!attack.OutOfAmmo())
+				attack.AttackPlayer();
+		}
+
+
 		//only set a new goal if searchNewGem is true
-		if(searchNewGem)
+		if(searchNewGem && health.GetHealth() < 4)
 		{
 			Vector3 closestGemPos = FindClosestGem();	//hold closest gem position here
 			Vector3 goalPos = new Vector3(closestGemPos.x, transform.position.y, closestGemPos.z); //constraing the y pos to this object y pos
 
 			search.SetGoalPos(goalPos);		//set the goal by calling SetGoalPos method in SearchingState script
+			inASearch = true;
 			searchNewGem = false;			//set searchNewGem to false until we find this gem						
 
 			if(debugMode)
@@ -57,12 +79,6 @@ public class StateController : MonoBehaviour
 		if(inASearch)
 		{
 			Searching();
-		}
-		//if not in a search and there are still gems on the board, search for next gem
-		if(!inASearch && gemCount > 0)
-		{
-			searchNewGem = true;
-			inASearch = true;
 		}
 	}
 
@@ -117,6 +133,8 @@ public class StateController : MonoBehaviour
 		{
 			inASearch = false;			//Once GoalReached() method returns true we can stop searching
 			gemCount--;					//there are now one less gems on the board
+			searchNewGem = true;		//set to true in case life is still too low
+		
 		}
 	}
 
