@@ -25,19 +25,23 @@ public class NPC1Health : MonoBehaviour
 	public void Heal(int healAmount)
 	{
 		if (healthMeter < maxHealth)
-			healthMeter += healAmount;
+			{	
+				healthMeter = healthMeter + healAmount;
+				if (healthMeter >= maxHealth)
+					healthMeter = maxHealth;
+			}
 	}
 
 	//Damage NPC1 if collide with Ammo.
 	//However I ran into a bug because he would lose life every time he tried to attack and his ammo would disappear
-//	private void OnTriggerEnter(Collider col)
-//	{
-//		if(col.gameObject.tag == "Ammo")
-//		{
-//			Destroy(col.gameObject);
-//			
-//			Damage(ammoDamage);			//damage 1 if collide with ammo
-//		}
-//	}
+	private void OnTriggerEnter(Collider col)
+	{
+		if(col.gameObject.tag == "PlayerAmmo")
+		{
+			Destroy(col.gameObject);
+			
+			Damage(ammoDamage);			//damage 1 if collide with ammo
+		}
+	}
 	
 }

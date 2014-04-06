@@ -3,7 +3,7 @@ using System.Collections;
 
 public class DoneCameraMovement : MonoBehaviour
 {
-	public float smooth = 0.5f;			// The relative speed at which the camera will catch up.
+	public float smooth = 1.5f;			// The relative speed at which the camera will catch up.
 	public GameObject cameraObject;
 	private Camera map;
 	
@@ -21,7 +21,7 @@ public class DoneCameraMovement : MonoBehaviour
 
 		// Setting the relative position as the initial relative position of the camera in the scene.
 		relCameraPos = transform.position - player.position;
-		relCameraPosMag = relCameraPos.magnitude - 0.5f;
+		relCameraPosMag = relCameraPos.magnitude;
 		//mapSelected = true;
 		//map.enabled = false;
 		//cameraObject.SetActive(true);

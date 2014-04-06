@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerThrowingController : MonoBehaviour {
 
-	private int amountOfAmmo = 5;
+	public int amountOfAmmo = 20;
 
 	public float shootingForce = 300;
 	public Transform ammoSpawner;
@@ -25,7 +25,7 @@ public class PlayerThrowingController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider col)
 	{
-		if(col.gameObject.tag == "Ammo")
+		if(col.gameObject.tag == "PlayerAmmo")
 		{
 			Destroy(col.gameObject);
 
