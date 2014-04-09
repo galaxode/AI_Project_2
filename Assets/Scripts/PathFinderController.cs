@@ -210,7 +210,7 @@ public class PathFinderController : MonoBehaviour
 
 		if (!Physics.Raycast(start, end - start, goalDistance))
 		{
-		    return true;
+			return true;
 		}
 		else
 		    return false;
@@ -309,6 +309,9 @@ public class PathFinderController : MonoBehaviour
 							else if(connectedNode.GetState() == Node.State.GOAL)
 							{
 								endNode.AddConnectedNode(aNode);
+								aNode.SetState(Node.State.CLOSED);
+
+								break;
 							}
 
 							aNode.SetState(Node.State.CLOSED);							//Close the previous node
