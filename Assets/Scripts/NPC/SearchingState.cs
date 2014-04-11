@@ -22,6 +22,8 @@ public class SearchingState : MonoBehaviour {
 	private bool onNode; 					//To determined when a node has been reached
 	public bool goalFound;					// NOT USED but keeping it as it may become useful later on
 
+	public bool stop = false;
+
 	private PathFinderController aPathFinder;	// This stores a reference to the PathFinderController script
 
 	/**
@@ -47,6 +49,12 @@ public class SearchingState : MonoBehaviour {
 	 */
 	public void MoveToGoal()
 	{
+
+		if(!stop)
+		{
+		Debug.Log("AAAAAAAND HEEEEEEEEEEREEEEEEEEE IIIIIIIIII GOOOOOOOOOOOOO!");
+		Debug.Log("MY GOAL ************************************ ======================== " + goalPos);
+
 		elapsedTime += Time.deltaTime;	//Maybe this can just go in the following if clause?
 
 		//If we choose to find path dinamically this will run every pathRescanRate seconds
@@ -86,14 +94,20 @@ public class SearchingState : MonoBehaviour {
 				Vector3 currPos = transform.position;	
 				float speed = speedMultiplier * Time.deltaTime;	//Set the speed here in case we want to change it while moving
 				Vector3 motion = nextNodePos - currPos;			//Now set the new position 
+
 				motion.Normalize();								//this makes the vector3 motion have a magnitude (length) of 1
 
 				currPos += motion * speed;					//create the new position by adding motion * speed units to our current position
+
+				TurnToTarget(currPos);
 				transform.position = currPos;				//now move to the new position
+
+				Debug.Log("IIIIII MMMMMMMMMMMMA************DE++++++ ITTTTTTTTTTTTTTTTTTTTTTTT");
 
 				NextNodeReached();							//Sets onNode variable - asking: should we keep moving to the same node? 
 			}
 		}
+	}
 	}
 
 	/**
@@ -112,6 +126,8 @@ public class SearchingState : MonoBehaviour {
 	 */
 	public void SetGoalPos(Vector3 pos)
 	{
+		stop = false;
+
 		goalPos = pos;
 		if(debugMode){Debug.Log("goalPos: " + goalPos);}
 		GetNewPath();		//We get a new path for every new position entered
@@ -161,6 +177,25 @@ public class SearchingState : MonoBehaviour {
 			return false;
 		}
 	}
+
+	private void TurnToTarget(Vector3 targetPos)
+	{
+		Vector3 toTarget = transform.position - targetPos;
+		toTarget.y = 0f;
+		
+		// get angle between my facing and vector to target
+		float angleDiff = Vector3.Angle(toTarget, transform.up);
+		
+		if (angleDiff < 2.0f) // degrees
+		{
+			Debug.Log("No need to turn");
+		}
+		else // turn
+		{  
+			Quaternion targetRotation = Quaternion.LookRotation (toTarget);
+			transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation (toTarget), Time.deltaTime * 8);
+		}
+	}
 		 
 	/**
 	 * This method allows other classes to set if the pathfinding should be dynamic or not
@@ -178,5 +213,10 @@ public class SearchingState : MonoBehaviour {
 	public void SetPathfindingSpeed(float theSpeed)
 	{
         speedMultiplier = theSpeed;
+	}
+
+	public Vector3 GetFurthestPoint(Vector3 thePoint)
+	{
+		return aPathFinder.GetFurthestNode(thePoint);
 	}
 }

@@ -4,7 +4,7 @@ using System.Collections;
 public class AttackingState : MonoBehaviour {
 
 	public static int amountOfAmmo = 10;
-	public float timeInterval = 2f;
+	public float timeInterval = 1f;
 	public Rigidbody npcAmmo;
 	public float shootingForce = 2f;
 

@@ -407,4 +407,31 @@ public class PathFinderController : MonoBehaviour
 		}
 		return VectorPath;
 	}
+
+	/**
+	 * Some methods may need to see all nodes without a need to return best path.  	
+	 * This method returns the furthest node from a specific vector position
+	 * @param thePoint a vector 3 from which we are measuring distances
+	 * @return the furthest node
+	 */
+	public Vector3 GetFurthestNode(Vector3 thePoint)
+	{
+		Vector3 furthestPos = new Vector3();
+		float furthestDistance = 0;
+
+
+		foreach(Node node in nodes)
+		{
+			float distanceFromPos = Vector3.Distance(thePoint, node.GetPos());
+
+			if(distanceFromPos > furthestDistance)
+			{
+				furthestPos = node.GetPos();
+				furthestDistance = distanceFromPos;
+			}
+
+		}
+		return furthestPos;
+	}
+
 }
