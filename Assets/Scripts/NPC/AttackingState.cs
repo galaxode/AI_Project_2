@@ -32,7 +32,6 @@ public class AttackingState : MonoBehaviour {
 			playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position;
 			shootingDirection = playerPosition - hand.transform.position;
 			shootingDirection.Normalize();
-			//shootingDirection.y = 2f;
 
 			//The below creates new instances of the amo and positiones it at the "hand" position. 
 			Rigidbody cloneAmmo;

@@ -19,21 +19,16 @@ public class GateController : MonoBehaviour {
 	{
 		intervalCheckTime -= Time.deltaTime;
 		
+		//Go up and then down every intervalCheckTime seconds 
 		if (intervalCheckTime <= 0)
 		{
-			Debug.Log("Entered first part");
-
 			if(!wallIsUp)
 			{
-				Debug.Log("Entered Second part");
-				//transform.position = Vector3.Lerp(transform.position, upPos, smooth * Time.deltaTime);
 				transform.position = upPos;
 				wallIsUp = true;
 			}
 			else
 			{
-				Debug.Log("Entered Third part");
-				//transform.position = Vector3.Lerp(transform.position, downPos, smooth * Time.deltaTime);
 				transform.position = downPos;
 				wallIsUp = false;
 			}
