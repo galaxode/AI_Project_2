@@ -13,7 +13,6 @@ public class StateController : MonoBehaviour
 	private bool chasing;					//to determine if we are chasing or not
 	private bool fleeing;					//To determine if we are fleeing or not
 
-	private int gemCount;					//keep track of number of gems
 	private float playerDetectionTimer;		// To keep a timer for when we are to find player
 
 	private SearchingState search;			//reference to the SearchingState script
@@ -21,6 +20,8 @@ public class StateController : MonoBehaviour
 	private GameObject player;				//reference to player game object
 	private AttackingState attack;			//reference to AttackingState script
 	private NPC1Health health;				//reference to NPC1Health script
+	public GameObject gemTrackerObject;		//Object that will hold whatever is holding the script for keeping track of gems
+	private GemTracker gemTracker;			//Same as above
 
 	private List<Vector3> gemPositions;		//list of all gem positions
 	private Vector3 closestGem;				//The position of the closest gem
@@ -35,17 +36,10 @@ public class StateController : MonoBehaviour
 		inASearch = false;								//Set the searching state false by default
 
 		//GEMS INSTANTIATION CODE
-		GameObject[] wordGems = GameObject.FindGameObjectsWithTag(wordGemTag);	//put all game objects with this tag in an array
+		gemTracker = gemTrackerObject.GetComponent<GemTracker>();		//This is to allows us to keep track of gems
 		gemPositions = new List<Vector3>();				//create new list of Vector3 positions for the gems
 		searchNewGem = true;							//set the searchNewGem to true upon start
 		closestGem = new Vector3();
-		foreach(GameObject gem in wordGems)				//now we need to get all the positions of the gem game objects and put in a list
-		{
-			Vector3 aGemPos = gem.transform.position;	//hold one gem position here temporarily
-			if(debugMode){Debug.Log(aGemPos);}     	    //display each gem position in console
-			gemPositions.Add(aGemPos);					//add the gem position to the list
-			gemCount++;									//count the gems on the board
-		}
 
 		//SIGHT INSTANTIATION CODE
 		sight = GetComponent<SightController>();
@@ -109,7 +103,7 @@ public class StateController : MonoBehaviour
 			}
 			else   // I the player is not seen 
 			{
-				if(!attack.OutOfAmmo())		//If the player is NOT seen but we are out of ammo, is a good time to find new gems
+				if(!attack.OutOfAmmo() && gemTracker.GetAmountOfGems() > 0)		//If the player is NOT seen but we are out of ammo, is a good time to find new gems
 				{
 					searchNewGem = true;
 				}
@@ -120,9 +114,9 @@ public class StateController : MonoBehaviour
 
 
 		//only set a new goal if searchNewGem is true and if not already in the middle of search and if we not chasing the player
-		if(!chasing && searchNewGem && health.GetHealth() < 4 &&!inASearch)
+		if(!chasing && searchNewGem && health.GetHealth() < 4 &&!inASearch && gemTracker.GetAmountOfGems() > 0)
 		{
-			FindClosestGem();	//hold closest gem position here
+			closestGem = gemTracker.FindClosestGem(playerPos);	//hold closest gem position here
 			goalPos = new Vector3(closestGem.x, transform.position.y, closestGem.z); //constraing the y pos to this object y pos
 
 			search.SetGoalPos(goalPos);		//set the goal by calling SetGoalPos method in SearchingState script
@@ -149,34 +143,6 @@ public class StateController : MonoBehaviour
 		}
 	}
 
-
-	/**
-	 * This method will give you the closest gem position to the NPC and set the Closest Gem variable
-	 */
-	private void FindClosestGem()
-	{
-		Vector3 myPos = transform.position;
-		float smallestDistance = 0.0f;
-		bool first = true;
-
-		foreach(Vector3 pos in gemPositions)
-		{
-			float aDistance = Vector3.Distance(pos, myPos);
-
-			if(first)									
-			{
-				smallestDistance = aDistance;	//since this is first position set smallestDistance to first calculation
-				closestGem = pos;				//since this is first position set closestGem to corresponding position
-				first = false;					//set to false so we do this only once per method call
-			}
-			else if(aDistance < smallestDistance)
-			{
-				smallestDistance = aDistance;	//set a new smallest distance if one exists
-				closestGem = pos;				//set closestGem that corresponds to that distance
-			}
-		}
-	}
-
 	/**
 	 * This method for now just keeps moving to a goal using the search state MoveToGoal method 
 	 */
@@ -191,27 +157,18 @@ public class StateController : MonoBehaviour
 		else if (search.GoalReached() == true) 	
 		{
 			inASearch = false;			//Once GoalReached() method returns true we can stop searching
-
-			if(!chasing && !fleeing && !searchNewGem)	//Make sure we were not just chasing or fleeing a		
-			{
-				if(goalPos.x == closestGem.x && goalPos.z == closestGem.z)
-				{
-					gemCount--;							//there are now one less gems on the board
-					gemPositions.Remove(closestGem);  //remove this from the position list so NPC does not search for it on next round
-
-					Debug.Log("A gem was removed!!");
-				}
-			}
 			
 			if(fleeing)	//Stop fleeing if thats what NPC was doing
 			{
 				fleeing = false;
 			}
 
-			if(gemCount > 1)		//If there are still Gems available
+			if(gemTracker.GetAmountOfGems() > 0)		//If there are still Gems available
 			{
 				searchNewGem = true;		//set to true in case life is still too low
 			}
+			else
+				searchNewGem = false;
 		}	
 	}
 }
