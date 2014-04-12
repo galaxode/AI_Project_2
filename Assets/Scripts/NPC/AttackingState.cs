@@ -4,7 +4,7 @@ using System.Collections;
 public class AttackingState : MonoBehaviour {
 
 	public static int amountOfAmmo = 10;
-	public float timeInterval = 2f;
+	public float timeInterval = 1f;
 	public Rigidbody npcAmmo;
 	public float shootingForce = 2f;
 
@@ -32,7 +32,6 @@ public class AttackingState : MonoBehaviour {
 			playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position;
 			shootingDirection = playerPosition - hand.transform.position;
 			shootingDirection.Normalize();
-			//shootingDirection.y = 2f;
 
 			//The below creates new instances of the amo and positiones it at the "hand" position. 
 			Rigidbody cloneAmmo;

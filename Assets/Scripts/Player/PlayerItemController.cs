@@ -7,12 +7,15 @@ public class PlayerItemController : MonoBehaviour
 	public string[] wordPrize = new string[] {"Ardent", "Enigma", "Fastidious", "Decipher" }; //these are words you can "learn" or "collect"
 	public GUIText wordCountText;
 	public GUIText wordText;
+	public GameObject gemTrackerObject;		//Object that will hold whatever is holding the script for keeping track of gems
+	private GemTracker gemTracker;			//Same as above
 
 	private int foodCount;
 	public GUIText foodCountText;
 
 	void Start()
 	{
+		gemTracker = gemTrackerObject.GetComponent<GemTracker>();		//This is to allows us to keep track of gems
 		wordCount = 0;
 		setWordCountText();
 		setWordText();
@@ -30,6 +33,7 @@ public class PlayerItemController : MonoBehaviour
 		if (other.gameObject.tag == "WordGem") //make word gems disappear, increment counter, set text
 		{
 			other.gameObject.SetActive(false);
+			gemTracker.RemoveGem();			//Update gem tracker by removing a Gem
 			wordCount++;
 			setWordCountText ();
 			setWordText();
