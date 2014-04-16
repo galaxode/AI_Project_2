@@ -35,5 +35,23 @@ public class GateController : MonoBehaviour {
 
 			intervalCheckTime = 5f;
 		}
+	 }
+	public void OpenGate()
+	{
+		if(!wallIsUp)
+		{
+			transform.position = upPos;
+			wallIsUp = true;
+		}
+
+	}
+	public void CloseGate()
+	{
+		if(wallIsUp)
+		{
+			transform.position = upPos;
+			wallIsUp = true;
+		}
+		
 	}
 }

@@ -7,20 +7,35 @@ public class PlayerItemController : MonoBehaviour
 	public string[] wordPrize = new string[] {"Ardent", "Enigma", "Fastidious", "Decipher" }; //these are words you can "learn" or "collect"
 	public GUIText wordCountText;
 	public GUIText wordText;
+	public bool atLeastOneGemCollected = false;
+
 	public GameObject gemTrackerObject;		//Object that will hold whatever is holding the script for keeping track of gems
 	private GemTracker gemTracker;			//Same as above
 
-	private int foodCount;
-	public GUIText foodCountText;
+	public GUIText currentHealthText;
+	public int maxHealth;
+	public int currentHealth;
+
+	
+					
 
 	void Start()
 	{
 		gemTracker = gemTrackerObject.GetComponent<GemTracker>();		//This is to allows us to keep track of gems
 		wordCount = 0;
-		setWordCountText();
-		setWordText();
-		foodCount = 0;
-		setFoodCountText();
+		SetWordCountText();
+		SetWordText();
+		SetCurrentHealthText();
+
+	}
+
+	void Update()
+	{
+		if (gemTracker.GetAmountOfGems() == 0)
+		{
+			if (wordCount == 0)
+				Application.LoadLevel(4);
+		}
 	}
 
 	/**
@@ -35,22 +50,41 @@ public class PlayerItemController : MonoBehaviour
 			other.gameObject.SetActive(false);
 			gemTracker.RemoveGem();			//Update gem tracker by removing a Gem
 			wordCount++;
-			setWordCountText ();
-			setWordText();
+			atLeastOneGemCollected = true;
+			SetWordCountText ();
+			SetWordText();
 		}
 		if (other.gameObject.tag == "Food") //make food disappear, increment counter, set text
 		{
-			other.gameObject.SetActive (false);
-			foodCount++;
-			setFoodCountText();
+			other.gameObject.SetActive(false);
+			currentHealth++;
+			SetCurrentHealthText();
 
 		}
+		if (other.gameObject.tag == "EnemyAmmo")
+		{
+			Destroy(other.gameObject);
+			currentHealth--;
+			if (currentHealth <= 0)
+			{
+				currentHealth = 0;
+				SetCurrentHealthText();
+				Application.LoadLevel(3);
+			}
+			else
+				SetCurrentHealthText();
+		}
+		if (other.gameObject.tag == "MagicalGate")
+		{
+
+		}
+
 	}
 
 	/**
 	* This method sets the word count text to be displayed on the game screen
 	*/
-	void setWordCountText()
+	void SetWordCountText()
 	{
 		wordCountText.text = "Words: " + wordCount.ToString();
 	}
@@ -59,7 +93,7 @@ public class PlayerItemController : MonoBehaviour
 	* This method sets the word text showing the word collected to be displayed on the game screen
 	* based on how many word gems have been collected
 	*/
-	void setWordText()
+	void SetWordText()
 	{	
 		if (wordCount < 1) 
 		{
@@ -75,11 +109,12 @@ public class PlayerItemController : MonoBehaviour
 	}
 	
 	/**
-	* This method sets the food count text showing how many food items collected
-	* It might turn into the players health meter later on
+	* This method sets the health text showing current health
 	*/
-	void setFoodCountText()
+	void SetCurrentHealthText()
 	{
-		foodCountText.text = "Food: " + foodCount.ToString();
+		currentHealthText.text = "Health: " + currentHealth.ToString();
 	}
+
+
 }
