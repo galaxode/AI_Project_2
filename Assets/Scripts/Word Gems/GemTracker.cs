@@ -8,6 +8,8 @@ public class GemTracker : MonoBehaviour {
 	private int amountOfGems;
 	GameObject[] wordGems;
 	private List<Vector3> gemPositions;
+
+
 	
 
 	void Awake () 
@@ -25,7 +27,7 @@ public class GemTracker : MonoBehaviour {
 	}
 
 	/**
-	 * This method repeats the operations in the awake function so that we can get first gett and updated list of all gem positions
+	 * This method repeats the operations in the awake function so that we can get updated list of all gem positions
 	 * @param startPos the point from where we measure distance (typically the NPC position)
 	 * @return the closest available gem
 	 */
@@ -78,6 +80,7 @@ public class GemTracker : MonoBehaviour {
 			amountOfGems--;
 		else
 			Debug.Log("Nothing to remove");
+			
 	}
 
 	/**

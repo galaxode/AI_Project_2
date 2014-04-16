@@ -34,11 +34,11 @@ public class NPC1Health : MonoBehaviour
 
 	//Damage NPC1 if collide with Ammo.
 	//However I ran into a bug because he would lose life every time he tried to attack and his ammo would disappear
-	private void OnTriggerEnter(Collider col)
+	private void OnTriggerEnter(Collider other)
 	{
-		if(col.gameObject.tag == "PlayerAmmo")
+		if(other.gameObject.tag == "PlayerAmmo")
 		{
-			Destroy(col.gameObject);
+			Destroy(other.gameObject);
 			
 			Damage(ammoDamage);			//damage 1 if collide with ammo
 		}
