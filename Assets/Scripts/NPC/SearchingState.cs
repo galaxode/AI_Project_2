@@ -112,6 +112,7 @@ public class SearchingState : MonoBehaviour {
 	private void GetNewPath()
 	{
 		path = aPathFinder.GetBestPath(transform.position, goalPos);  
+		Debug.Log("NODE RETURNED AT: " + Time.deltaTime + " SECONDS");
 		nextNodeIndex = 0;	//Everytime we get a new path we must start from index 0
 		onNode = true;		//If we do not set onNode back to true every time we click on a new point, the NPC would have to finish reaching the next node before following new path
 	}
