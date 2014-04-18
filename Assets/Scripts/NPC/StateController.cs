@@ -114,7 +114,7 @@ public class StateController : MonoBehaviour
 
 
 		//only set a new goal if searchNewGem is true and if not already in the middle of search and if we not chasing the player
-		if(!chasing && searchNewGem && health.GetHealth() < 4 &&!inASearch && gemTracker.GetAmountOfGems() > 0)
+		if(!chasing && searchNewGem && health.GetHealth() < health.GetCriticalLevel() &&!inASearch && gemTracker.GetAmountOfGems() > 0)
 		{
 			closestGem = gemTracker.FindClosestGem(playerPos);	//hold closest gem position here
 			goalPos = new Vector3(closestGem.x, transform.position.y, closestGem.z); //constraing the y pos to this object y pos

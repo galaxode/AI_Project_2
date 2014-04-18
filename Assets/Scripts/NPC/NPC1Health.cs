@@ -6,12 +6,19 @@ public class NPC1Health : MonoBehaviour
 	
 	public int maxHealth;
 	public int healthMeter;
+	public int criticalLevel = 4;
 	public int ammoDamage;
+
 	
 
 	public int GetHealth()
 	{
 		return healthMeter;
+	}
+
+	public int GetCriticalLevel()
+	{
+		return criticalLevel;
 	}
 
 	public void Damage(int damageAmount)
